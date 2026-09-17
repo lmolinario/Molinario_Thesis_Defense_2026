@@ -1,0 +1,347 @@
+## Slide 1 — Title
+
+Good morning, and thank you for the opportunity to present my work.
+
+My thesis is entitled **“Evaluating the Robustness of AI-Based Forensic Tools under Adversarial and Anti-Forensic Attacks.”**
+
+The starting point of this research is the increasing use of Artificial Intelligence in digital forensic tools, especially for automatically analysing and prioritising large collections of images.
+
+The objective of my work was **not to develop a new firearm classifier**.
+
+Instead, I wanted to investigate a more operational question: **can AI-assisted forensic triage still be considered dependable when the images it processes are outside the expected distribution, degraded, or deliberately manipulated?**
+
+This distinction is important because, in a forensic context, classification is not simply an academic machine-learning task. The output of an AI system can influence which material an analyst sees first and, potentially, which material receives less attention.
+
+So, I will begin with the operational risk that motivated the entire study.
+
+---
+
+## Slide 2 — The operational risk is silent exclusion
+
+Digital forensic investigations can involve thousands, or even hundreds of thousands, of images.
+
+Artificial Intelligence can therefore be extremely useful to reduce the analyst's workload by identifying potentially relevant material and placing it higher in the review queue.
+
+However, the two possible directions of error do not have the same operational consequence.
+
+A **false positive** generally means that the analyst has to inspect an additional irrelevant image. This increases workload.
+
+A **false negative**, on the other hand, may be more critical. A relevant image can be classified as non-relevant and silently moved away from the analyst's priority queue.
+
+The evidence itself is not physically lost, but its **discovery and prioritisation path can be affected**.
+
+This is why high accuracy under normal, clean conditions is not sufficient to establish that an AI-assisted forensic system is operationally robust.
+
+The central question of this thesis is therefore:
+
+**How does forensic image triage behave under adversarial, anti-forensic and out-of-distribution inputs?**
+
+My contribution is an **auditable robustness assessment**, rather than a new classification algorithm.
+
+To answer this question systematically, I developed the FAIRLab experimental protocol.
+
+---
+
+## Slide 3 — FAIRLab makes robustness auditable
+
+FAIRLab structures the evaluation into six connected stages.
+
+First, I start from a **heterogeneous source pool** of images.
+
+Second, those images are technically validated, manually reviewed and deduplicated.
+
+Third, I freeze the experimental corpus. Once frozen, the population used for the evaluation no longer changes.
+
+Fourth, I generate controlled adversarial and anti-forensic variants.
+
+Fifth, I evaluate both transparent machine-learning models and commercial forensic systems.
+
+And finally, I normalise and interpret the resulting outputs in operational forensic terms.
+
+An important aspect of FAIRLab is that **traceability is not added at the end**. It is maintained throughout the entire pipeline.
+
+Images have deterministic identifiers; datasets and experimental configurations are frozen; manifests link source images to their derived variants; checksums protect controlled artefacts; and the final reported results can be linked back to the corresponding source and experimental condition.
+
+This allows us to ask not only whether a system made an error, but also **which input produced it, under which condition, using which configuration and through which processing path**.
+
+The next slide shows the exact population used in the experiments.
+
+---
+
+## Slide 4 — One population becomes 11,500 traceable files
+
+The frozen corpus contains **1,500 source images**.
+
+Five hundred are classified as **weapon**, five hundred as **non-weapon**, and another five hundred form a separate **out-of-distribution, or OOD, branch**.
+
+The weapon and non-weapon images form the common binary classification task.
+
+For each of these one thousand binary images, I generated ten linked manipulated variants: five adversarial or adversarial-style conditions and five anti-forensic transformations.
+
+This produces **10,000 manipulated files**.
+
+Together with the original 1,500 clean source images, the complete tool-facing bundle therefore contains **11,500 files**.
+
+There are two methodological points that are important here.
+
+First, these 10,000 manipulated images are **not 10,000 independent observations**. Each variant remains explicitly linked to its original source image.
+
+Second, the 500 OOD images are not treated as a third supervised class. Their purpose is different: they allow us to observe how a closed-set system behaves when it receives material that does not properly belong to the binary task.
+
+The same frozen experimental population is then evaluated at two complementary levels.
+
+---
+
+## Slide 5 — Two evidence levels, one experimental basis
+
+The first level consists of three **transparent proxy models**: EfficientNet-B0, ResNet18 and a CLIP-based proxy.
+
+These models provide a controlled environment in which I can inspect predictions, gradients and fold-specific checkpoints.
+
+They are not intended to reverse engineer or reproduce the internal models of commercial forensic products.
+
+Their purpose is to provide an inspectable experimental layer.
+
+The second level consists of **four commercial forensic systems evaluated in six configurations**: Magnet AXIOM with Magnet.AI, Excire Foto 2025 at three distance settings, Cellebrite Inseyets, and Magnet Griffeye with T3K CORE.
+
+In this second case, the systems are black boxes. I can observe the inputs provided to the software and the outputs presented to the analyst, but I do not know their internal architecture, preprocessing, training data or decision logic.
+
+This distinction is also essential for the threat model.
+
+The model-dependent adversarial attacks are generated **directly against EfficientNet-B0**.
+
+When the same generated artefacts are evaluated on ResNet18, CLIP or the commercial tools, I am measuring **empirical transfer**, not a direct attack against those systems.
+
+Color Shift and the five anti-forensic transformations are instead model-agnostic conditions.
+
+Because the commercial systems produce very different types of outputs, the next methodological problem is how to compare them correctly.
+
+---
+
+## Slide 6 — Explicit mappings enable comparison
+
+The commercial products do not expose a common prediction interface.
+
+Depending on the tool, the analyst may see tags, bookmarks, semantic search results or different types of labels.
+
+It would therefore be incorrect to treat all these outputs as if they were equivalent probabilities.
+
+For each version and configuration, I instead defined and froze an explicit **output-normalisation rule**.
+
+The observable output is converted into one of three operational states: **weapon, non-weapon or unknown**.
+
+Once this mapping is explicit, directional errors can be interpreted consistently.
+
+The **False Negative Rate**, or FNR, represents the missed-target risk: a weapon image moves toward the non-weapon state.
+
+The **False Positive Rate**, or FPR, instead represents additional review workload: a non-weapon image is routed toward weapon.
+
+The OOD weapon-assignment rate is kept separate, because OOD images do not have a supervised positive or negative role in the binary experiment.
+
+In the 69,000 normalised commercial decisions produced by the experiment, no unknown state occurred. Nevertheless, the unknown state remains explicitly supported by the protocol.
+
+With these definitions in place, we can now look at the first major robustness result.
+
+---
+
+## Slide 7 — Direct-target collapse did not transfer uniformly
+
+This slide shows why **clean performance and robustness must not be confused**.
+
+EfficientNet-B0 achieves the highest clean accuracy among the proxy models, at **97.8 percent**.
+
+However, under the strongest direct Sigma Zero condition, its accuracy falls to only **1.5 percent**.
+
+This is a decrease of **96.3 percentage points**.
+
+So, a model that performs extremely well under nominal conditions can become extremely vulnerable when an attack is specifically optimised against it.
+
+However, the same adversarial artefacts do **not** produce an equivalent collapse on the other architectures.
+
+For ResNet18, the worst transferred accuracy shown here is **91.8 percent**, under FGSM.
+
+For the CLIP-based proxy, it is **91.4 percent**, again under FGSM.
+
+This distinction is fundamental.
+
+The EfficientNet result demonstrates a **direct-target vulnerability**.
+
+The ResNet18 and CLIP results measure only **empirical transfer from another source model**.
+
+A limited transfer effect does not prove that those models would be robust against attacks constructed directly against them.
+
+Anti-forensic transformations produced smaller aggregate effects on the proxies. The largest observed drop was **3 percentage points**, for ResNet18 under histogram modification.
+
+The same transfer question becomes even more interesting when we move to the proprietary systems.
+
+---
+
+## Slide 8 — Black-box transfer was configuration-dependent
+
+This heatmap extends the analysis to the commercial forensic configurations.
+
+There is no need to read every cell. The important information is the overall pattern.
+
+The effects are **highly heterogeneous**.
+
+Exactly the same adversarial artefact generated against EfficientNet-B0 can produce almost no degradation in one black-box configuration and a considerably larger effect in another.
+
+The clearest examples in this experiment are the Sigma Zero artefacts evaluated with Excire.
+
+At distance 50, the observed accuracy reduction is **20.2 percentage points**.
+
+At distance 80, the reduction reaches **25.8 percentage points**.
+
+Again, these must be described precisely.
+
+They are **transfer effects from artefacts generated using EfficientNet-B0**. They are not direct attacks optimised against the proprietary Excire system.
+
+And these results are also not intended to establish a ranking between commercial products.
+
+Instead, they demonstrate that robustness can depend strongly not only on the software, but also on the **specific configuration in which that software is used**.
+
+The clean-condition results make this configuration effect particularly clear.
+
+---
+
+## Slide 9 — A lower miss rate can create a larger review burden
+
+Excire provides a useful example because I evaluated three distance configurations: D20, D50 and D80.
+
+If we move from D20 to D80, the clean-condition **missed-target rate falls from 12 percent to only 1.4 percent**.
+
+From one perspective, this is clearly beneficial: fewer weapon images are missed.
+
+But this improvement has a cost.
+
+The **false-positive rate increases from 2.6 percent to 15.6 percent**.
+
+At the same time, the proportion of OOD images assigned to the weapon-oriented state increases from **23.8 percent to 52.2 percent**.
+
+So there is no configuration here that simultaneously minimises missed targets, additional review workload and OOD assignments.
+
+This is why the thesis treats these results as **operating profiles**, rather than using a single metric to define which configuration is best.
+
+The appropriate operating point depends on what kind of error an investigation is prepared to tolerate.
+
+If the priority is to minimise silent misses, a more permissive configuration may be useful, but the analyst must accept a substantially larger review queue.
+
+The separate OOD branch allows us to examine this third aspect directly.
+
+---
+
+## Slide 10 — OOD images were still routed to weapon
+
+Every system evaluated in the experiment assigns at least some out-of-distribution material to the weapon-oriented state.
+
+Among the proxies, the most striking result is the CLIP-based model, with an OOD weapon-assignment rate of **83.6 percent**.
+
+In the six commercial configurations, the observed values range from **23.8 percent to 52.2 percent**.
+
+There is a denominator detail worth clarifying.
+
+For CLIP, each of the 500 OOD images is evaluated using five fold-specific checkpoints, so the 83.6 percent value refers to **2,500 responses**.
+
+For each commercial configuration, there is instead one normalised decision per OOD image.
+
+These values should **not** be interpreted as ordinary false-positive rates.
+
+The OOD images are deliberately outside the supervised weapon versus non-weapon task.
+
+What these values reveal is the behaviour of a **closed-set classifier when its basic task assumptions are violated**.
+
+The system is still forced to produce an operational outcome, and this can influence the analyst's prioritisation workload.
+
+This is another reason why clean binary accuracy alone cannot describe the operational behaviour of an AI-assisted forensic tool.
+
+A selected explainability case provides one final illustration.
+
+---
+
+## Slide 11 — A maximally concentrated output can still be wrong
+
+In this example, case 0015 has a reference class of **non-weapon**.
+
+After the Sigma Zero perturbation, the EfficientNet proxy classifies it as **weapon**.
+
+Even more interestingly, the maximum predicted-class probability is **1.000**.
+
+So the model output is maximally concentrated on a prediction that is nevertheless wrong.
+
+The Integrated Gradients visualisations allow me to inspect which regions of the image contribute to the selected proxy output.
+
+However, I deliberately limit the interpretation of this analysis.
+
+Integrated Gradients is used here as a **qualitative diagnostic tool**.
+
+The attribution map does not prove that the model has understood the object correctly.
+
+It does not transform a high probability into calibrated confidence.
+
+It does not certify the correctness of the decision.
+
+And it cannot explain the proprietary black-box systems, whose internal models are unavailable.
+
+This example therefore reinforces an important general principle: a strong-looking numerical output from an AI system should not be interpreted automatically as trustworthy forensic certainty.
+
+This brings us from experimental results to their operational implications.
+
+---
+
+## Slide 12 — AI should prioritize evidence, not exclude it
+
+The results do not suggest that AI should be removed from digital forensic workflows.
+
+On the contrary, AI can provide substantial benefits when investigators have to process extremely large volumes of material.
+
+The question is **how that automation should be used**.
+
+My proposed workflow begins with AI-generated tags, labels or semantic matches.
+
+These outputs are then used to construct a **prioritised review queue**, reducing the initial workload.
+
+But the next stage remains human review.
+
+The analyst evaluates the context, verifies the material and is responsible for the final assessment.
+
+Any action taken on the basis of the automated output should also be documented.
+
+In particular, the process should preserve the **tool version, the configuration, the output-mapping rule and the validation context**.
+
+This makes the workflow reviewable and allows another expert to understand how a particular item reached a particular operational state.
+
+The practical rule emerging from this thesis can therefore be expressed very simply:
+
+**use AI to prioritise evidence review, but never allow it to silently exclude evidence from human consideration.**
+
+I will conclude with the three main points that I would like the commission to retain.
+
+---
+
+## Slide 13 — Conclusions
+
+The first conclusion is that **clean performance is only a baseline**.
+
+A system may perform extremely well under nominal conditions and still behave very differently when exposed to adversarial, anti-forensic or out-of-distribution inputs.
+
+The second conclusion is that the different phenomena observed in this work must remain conceptually separated.
+
+A direct attack against a source model is not the same as empirical transfer.
+
+OOD behaviour is not an ordinary false positive.
+
+And a configuration trade-off is not the same as adversarial vulnerability.
+
+Treating all these effects as one generic measure of “accuracy” would hide information that is operationally important.
+
+The third conclusion concerns methodology.
+
+FAIRLab provides a way to connect the source image, the derived experimental condition, the model or software output, the normalised operational state and the final metric through a traceable and auditable process.
+
+So, the central message of the thesis is this:
+
+**Artificial Intelligence can be extremely valuable for prioritising evidence, but it must not become an autonomous mechanism for silently excluding it.**
+
+Thank you very much for your attention.
+
+I am happy to answer your questions.
