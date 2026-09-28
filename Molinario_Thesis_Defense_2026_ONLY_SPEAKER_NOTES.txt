@@ -1,0 +1,230 @@
+MSc THESIS DEFENSE — SPEAKER NOTES ONLY
+Lello Molinario
+
+MAIN PRESENTATION
+========================================================================
+
+SLIDE 01 — Evaluating the Robustness of AI-Based Forensic Tools under Adversarial and Anti-Forensic Attacks
+Timing: 0:00–0:40
+
+Good morning. My name is Lello Molinario, and today I will present my Master's thesis entitled “Evaluating the Robustness of AI-Based Forensic Tools under Adversarial and Anti-Forensic Attacks”.
+Artificial intelligence is increasingly integrated into digital forensic tools to help investigators analyze and classify relevant data. However, this introduces an important question: what happens when the data analyzed by these systems are intentionally manipulated to evade detection?
+The main goal of my thesis is to investigate the operational robustness of AI-based forensic tools under adversarial and anti-forensic conditions. To study this problem experimentally, I use automated image classification as a representative case study.
+
+Transition: I will start from the operational risk that motivated this work.
+
+SLIDE 02 — The operational risk is silent exclusion
+Timing: 0:40–1:25
+
+Digital investigations may involve very large amounts of data, and AI-based tools can help investigators prioritize what should be reviewed first.
+However, the main operational risk is a false negative. A false positive creates additional work for the analyst, but a false negative may silently move relevant evidence out of the priority queue.
+For this reason, good performance on clean data is not enough. The key question is how forensic triage behaves when the input is adversarial, anti-forensic, or out of distribution.
+My contribution is therefore an auditable robustness assessment, not the development of a new firearm classifier.
+
+Transition: To evaluate this problem systematically, I designed the FAIRLab protocol.
+
+SLIDE 03 — FAIRLab makes robustness auditable
+Timing: 1:25–2:15
+
+FAIRLab is the experimental protocol used to make the robustness assessment traceable and auditable.
+It connects six stages. I start from a heterogeneous image pool, validate and deduplicate it, and then freeze the source population. Next, I generate controlled perturbations, evaluate both transparent proxy models and commercial black-box configurations, normalize the observable outputs, and finally interpret the results in forensic terms.
+Traceability is maintained throughout the process using deterministic identifiers, manifests, checksums, frozen configurations, and source-to-output links.
+This is important because every reported result must be connected back to the original source and to the exact experimental condition.
+
+Transition: The next slide shows the exact experimental population behind every comparison.
+
+SLIDE 04 — One population becomes 11,500 traceable files
+Timing: 2:15–2:55
+
+The frozen population contains 1,500 source images: 500 weapon, 500 non-weapon, and 500 images in a separate out-of-distribution branch.
+The 1,000 images belonging to the binary task are each linked to ten manipulated conditions, producing 10,000 adversarial and anti-forensic variants. Together with the 1,500 clean sources, the tool-facing bundle contains 11,500 files.
+An important point is that these 10,000 manipulated files are not independent cases. They remain source-condition variants linked to the original images. The OOD branch is also evaluated separately and is not treated as a third supervised class.
+
+Transition: Before moving to the tools, I will clarify how weapon, non-weapon and OOD play different roles.
+
+SLIDE 05 — Weapon, non-weapon and OOD: distinct roles
+Timing: 2:55–3:30
+
+Before moving to the tools, it is important to distinguish the three groups in the frozen source population.
+Weapon and non-weapon form the supervised binary task. Weapon images contain a real firearm or firearm-like object that is sufficiently visible and relevant to the triage task. Non-weapon images are realistic negative samples with no firearm, but they still belong to the same visual domain.
+OOD is different. It is a separate evaluation branch containing borderline, synthetic, degraded, ambiguous, or semantically external inputs, such as toys or replicas, CGI, non-firearm weapons, or war-related imagery.
+So OOD is not a third supervised class. It is a stress-test branch used to observe how closed-set systems behave outside the intended binary distribution.
+
+Transition: With this distinction clear, I can now explain the two evidence levels used in the evaluation.
+
+SLIDE 06 — Two evidence levels, one experimental basis
+Timing: 3:30–4:25
+
+The evaluation uses two evidence levels.
+The first level consists of three transparent proxy models: EfficientNet-B0, ResNet18, and a CLIP-based proxy. These models allow inspection of predictions, gradients, and fold-aware checkpoints.
+The second level consists of four commercial black-box systems evaluated through six configurations. Here I can only observe analyst-visible outputs such as tags, bookmarks, labels, or semantic retrieval results.
+The threat-model distinction is essential. Model-dependent adversarial attacks are generated directly against EfficientNet-B0. When the same artifacts are evaluated on the other proxies or commercial systems, I measure empirical transfer, not a direct attack. Color Shift and the five anti-forensic transformations are model-agnostic conditions.
+
+Transition: Because these systems expose different outputs, I need an explicit normalization step before comparing them.
+
+SLIDE 07 — Explicit mappings enable comparison
+Timing: 4:25–5:15
+
+Commercial forensic tools do not expose one common prediction interface. Depending on the tool, the observable result may be a tag, a bookmark, a label, or a retrieval hit.
+For this reason, I freeze an output mapping for every tool version and configuration and normalize each observable result into three operational states: weapon, non-weapon, or unknown.
+This allows directional errors to be compared consistently. The false-negative rate represents missed-target risk, while the false-positive rate represents additional review workload. OOD weapon assignment is reported separately because OOD images do not belong to the supervised binary task.
+In the final 69,000 normalized commercial decisions, no unknown state occurred, but the protocol keeps this state explicit rather than silently treating unsupported output as negative.
+
+Transition: With the comparison rules fixed, we can now examine the main results.
+
+SLIDE 08 — Direct-target collapse did not transfer uniformly
+Timing: 5:15–6:15
+
+This slide shows the difference between direct vulnerability and transferability.
+EfficientNet-B0 reaches 97.8 percent accuracy on clean data. Under the strongest direct Sigma Zero condition, accuracy falls to 1.5 percent, corresponding to a drop of 96.3 percentage points.
+However, the same generated artifacts do not transfer uniformly. The worst transferred accuracy is 91.8 percent for ResNet18 and 91.4 percent for the CLIP proxy.
+So these results support two different claims. EfficientNet-B0 shows a severe direct-target vulnerability, while cross-architecture transfer is much more limited in these frozen conditions.
+The largest aggregate anti-forensic proxy drop is smaller, at 3.0 percentage points, although directional errors still need to be considered.
+
+Transition: The commercial black-box results show that transfer is also strongly configuration-dependent.
+
+SLIDE 09 — Black-box transfer was configuration-dependent
+Timing: 6:15–7:10
+
+This heatmap summarizes empirical transfer on the commercial black-box configurations.
+I would not interpret every cell individually. The important message is heterogeneity: artifacts generated against EfficientNet-B0 produce different effects across different tools and even across different settings of the same tool.
+The largest observed transfer effects are produced by Sigma Zero on Excire D50 and D80, with accuracy drops of 20.2 and 25.8 percentage points.
+These are transfer results from EfficientNet-B0 artifacts. They are not direct attacks against the proprietary models, because their internal models and gradients are not available.
+For the same reason, this heatmap should be interpreted as a protocol-specific robustness profile, not as a universal ranking of products.
+
+Transition: Configuration choices also change the ordinary clean-condition trade-off between misses and review workload.
+
+SLIDE 10 — A lower miss rate can create a larger review burden
+Timing: 7:10–8:05
+
+This slide shows why one overall accuracy value is not enough for forensic triage.
+For Excire, moving from distance 20 to distance 80 reduces the missed-target rate from 12.0 percent to 1.4 percent. This looks positive from the perspective of silent exclusion.
+However, the false-positive rate increases from 2.6 to 15.6 percent, creating substantially more review work. At the same time, the OOD weapon-assignment rate increases from 23.8 to 52.2 percent.
+So no configuration simultaneously minimizes missed targets, review workload, and OOD assignments. The operating point must therefore be interpreted according to the forensic use case rather than by selecting a single headline metric.
+
+Transition: The separate OOD branch makes this third type of behavior directly visible.
+
+SLIDE 11 — OOD images were still routed to weapon
+Timing: 8:05–8:55
+
+All evaluated systems assign at least some out-of-distribution images to the weapon-oriented state.
+The CLIP proxy reaches an OOD weapon-assignment rate of 83.6 percent, while the commercial configurations range from 23.8 to 52.2 percent.
+These values must be interpreted carefully. OOD images are not part of the supervised weapon versus non-weapon task, so these are not ordinary supervised false-positive rates. They describe closed-set operating behavior when the system is forced to process inputs outside the intended binary distribution.
+For CLIP (Contrastive Language-Image Pre-training), the reported value aggregates five fold-specific responses for each of the 500 OOD images. Each commercial configuration instead produces one normalized decision per OOD image.
+
+Transition: The next example shows why even a maximally concentrated model output does not guarantee correctness.
+
+SLIDE 12 — A maximally concentrated output can still be wrong
+Timing: 8:55–9:40
+
+This is a qualitative explainability example from the transparent proxy analysis.
+In case 0015, the reference class is non-weapon. After the Sigma Zero perturbation, the proxy predicts weapon with a maximum predicted-class probability of 1 hundred percent.
+Integrated Gradients is used here to inspect where the selected proxy response is concentrated. However, I deliberately keep the claim limited. The attribution is a diagnostic aid: it does not certify that the prediction is correct, it does not calibrate confidence, and it does not explain the internal behavior of proprietary black-box tools.
+The important point is that a highly concentrated or apparently confident output can still be wrong.
+
+Transition: These findings lead to a simple operational principle for the use of AI in forensic triage.
+
+SLIDE 13 — Human review remains the final decision gate
+Timing: 9:40–10:20
+
+AI can still provide substantial value in forensic workflows, but it should support prioritization rather than irreversible exclusion.
+The AI output can create a prioritized review queue and reduce workload. The human analyst then validates the result in context and makes the final decision.
+At the same time, each decision should preserve the tool version, configuration, output mapping, and validation context. This makes the workflow traceable and defensible.
+The practical rule is therefore simple: use AI to prioritize evidence review, but never allow it to silently exclude potentially relevant evidence without human review.
+
+Transition: Before concluding, I will state the main boundaries of the study.
+
+SLIDE 14 — Claim boundaries keep the result defensible
+Timing: 10:20–11:05
+
+The results should be interpreted within the boundaries of the frozen protocol.
+The main limitations are the 1,500-image corpus with one reviewer, one frozen parameter setting for each perturbation condition, direct model-dependent attacks only against EfficientNet-B0, and commercial outputs that depend on the specific tool version and configuration.
+I also evaluated possible metadata sensitivity. Fifteen of the 11,500 files matched a predefined sensitive metadata term. The leave-out differences were small, but this does not prove that metadata was causally irrelevant to every individual decision.
+Finally, this work evaluates operational triage robustness. It does not claim legal admissibility, certification, or a universal ranking of commercial products.
+
+Transition: I will finish with three messages to remember.
+
+SLIDE 15 — AI can prioritize evidence; it must not silently exclude it.
+Timing: 11:05–11:45
+
+I would like to conclude with three points.
+First, clean performance is only the baseline. Robustness is condition-dependent, so clean accuracy alone is not sufficient.
+Second, direct attacks, empirical transfer, out-of-distribution behavior, and configuration trade-offs are different dimensions and should not be mixed into one single measure.
+Third, FAIRLab makes these dimensions traceable, auditable, and reviewable by a forensic expert.
+The final message of the thesis is therefore: AI can prioritize evidence, but it must not silently exclude it.
+
+Transition: Thank you for your attention.
+
+========================================================================
+CLOSING / Q&A
+
+Thank you for your attention. I am happy to answer your questions.
+Presenter cue: Stop here. Do not continue speaking unless the commission asks a question. Open a backup slide only when it directly supports the answer.
+
+========================================================================
+BACKUP SLIDES — COMMISSION Q&A
+
+BACKUP B1 — Research questions and claim scope
+Use when: The commission asks: “What are your formal research questions?” or “What exactly does the thesis claim?”
+Answer:
+The thesis has four research questions. RQ1 evaluates whether the proxy models maintain clean-baseline performance under separate OOD, adversarial, and anti-forensic conditions. RQ2 separates direct source-model attacks, cross-architecture transfer, and model-agnostic Color Shift. RQ3 examines how black-box outputs and configuration choices shape the observed operational profiles. RQ4 focuses on which directional errors, degradations, OOD assignments, and unknown states matter for continued human review.
+The claim scope is deliberately limited: this is an operational robustness assessment under one frozen and traceable protocol. It is not a certification, a legal-admissibility assessment, or a universal product ranking.
+Keywords: RQ1 robustness conditions → RQ2 direct vs transfer → RQ3 black-box configuration → RQ4 operational risk → protocol-specific scope
+
+BACKUP B2 — Perturbation suite and threat paths
+Use when: The commission asks: “Which attacks and transformations did you evaluate?” or “Which ones are direct attacks?”
+Answer:
+The adversarial or adversarial-style group includes FGSM, One Pixel, Sigma Zero, SuperDeepFool, and deterministic Color Shift. The anti-forensic group includes JPEG recompression, resampling or resize, Gaussian blur, histogram modification, and contrast stretching.
+The critical distinction is the threat path. Model-dependent attacks are generated directly only against EfficientNet-B0. When those same files are evaluated on ResNet18, CLIP, or the commercial systems, the result is empirical transfer. Color Shift and all five anti-forensic transformations are model-agnostic conditions.
+Keywords: 5 adversarial/adversarial-style → 5 anti-forensic → direct only EfficientNet-B0 → transfer elsewhere → model-agnostic Color Shift/AF
+
+BACKUP B3 — Traceability links sources to reported figures
+Use when: The commission asks: “How can a reported result be audited?” or “How reproducible is the experiment?”
+Answer:
+A reported result can be followed through a complete chain. I start from the source manifest and manual review, then use the source-condition identifier to link the derived variant. From there I can identify the proxy prediction or normalized commercial output, the metric table, and finally the figure or conclusion reported in the thesis.
+Integrity is supported by SHA-256 digests, frozen model and tool-version registries, frozen configurations, and explicit normalization rules. The repository scripts regenerate the main metrics and thesis-ready reporting assets.
+Keywords: source → derivation → decision → metric → report → SHA-256 → frozen registries
+
+BACKUP B4 — Commercial clean metrics and OOD behavior
+Use when: The commission asks for an exact number or compares two commercial configurations.
+Answer:
+This table reports clean binary accuracy, recall, false-negative rate, false-positive rate, and a separate OOD weapon-assignment rate for each frozen configuration.
+For example, Griffeye/T3K has 97.8 percent clean accuracy and 0.8 percent FPR in this protocol, while Excire D80 has the lowest FNR at 1.4 percent but a much higher FPR of 15.6 percent and an OOD weapon-assignment rate of 52.2 percent.
+I would not use the table to declare a universally best product. These rows describe operating profiles under specific tool versions, settings, mappings, and one frozen dataset.
+Keywords: exact numbers → clean and OOD separate → operating profiles → no universal ranking
+
+BACKUP B5 — Adversarial settings were frozen before evaluation
+Use when: The commission asks: “Which attack parameters did you use?” or “Were the attacks reproducible?”
+Answer:
+All adversarial settings were frozen before evaluation. FGSM is untargeted with epsilon equal to 8 over 255 in pixel space and uses the fold-aware white-box EfficientNet-B0 checkpoint. One Pixel uses differential evolution over x, y, R, G, and B, with 50 iterations, an effective population of about 100, seed 42, and early stopping after misclassification.
+Sigma Zero uses 1,000 steps with eta zero 1.0, sigma 0.001, and tau zero 0.3. SuperDeepFool uses SDF infinity-one, with 20 outer iterations, 50 inner DeepFool iterations, and one projection step. Color Shift is deterministic and model-agnostic.
+Keywords: FGSM 8/255 → One Pixel DE 50/100 seed42 → Sigma Zero 1000 steps → SDF 20/50/1 → EfficientNet target
+
+BACKUP B6 — Frozen anti-forensic settings
+Use when: The commission asks: “How did you control the anti-forensic transformations?”
+Answer:
+Each anti-forensic condition uses one frozen, model-agnostic setting. JPEG recompression uses quality 70 without changing dimensions. Resize downsamples to 50 percent and restores the original size with bicubic interpolation. Gaussian blur uses radius 1.5. Histogram modification applies per-channel equalization, while contrast stretching uses autocontrast with a 1 percent cutoff.
+The transformations other than the dedicated JPEG recompression condition are serialized at JPEG quality 95. Each condition contains 1,000 source-linked artifacts, so comparisons remain paired to the same binary source population.
+Keywords: JPEG q70 → resize 50% bicubic → blur 1.5 → histogram equalization → autocontrast 1% → frozen/model-agnostic
+
+BACKUP B7 — How heterogeneous outputs became comparable
+Use when: The commission asks: “How did you compare tools that produce different kinds of outputs?”
+Answer:
+I did not assume that the commercial systems expose the same classifier interface. Instead, I defined a frozen mapping for the analyst-visible output of each system.
+Magnet uses the “Possible weapons” tag. Griffeye/T3K uses the CORE/Violence/Firearm bookmark. Excire uses a hit in at least one of eight frozen firearm-oriented prompt lists, with D20, D50, and D80 kept as separate configurations. Cellebrite uses the “Armi”, “Pistola”, or “Fucile” classifications.
+The observable states are mapped to weapon, non-weapon, or unknown. Unsupported output is never silently converted to negative. No unknown state occurred in the final 69,000 normalized decisions.
+Keywords: observable outputs → frozen mapping → per-tool rule → unsupported = unknown, never negative → 0 unknown final
+
+BACKUP B8 — Metric denominators keep comparisons honest
+Use when: The commission asks about FNR, FPR, OOD rates, or why denominators differ.
+Answer:
+Accuracy is the proportion of correct evaluated binary decisions. FNR is false negatives divided by true positives plus false negatives, so operationally it represents missed-target risk. FPR is false positives divided by false positives plus true negatives, so it represents additional review workload.
+OOD weapon assignment is reported separately because OOD images do not belong to the supervised weapon/non-weapon task. For proxy OOD evaluation, five fold-specific checkpoints produce 2,500 responses from 500 images. Each commercial configuration produces one decision per OOD image, so its denominator is 500. Unknown outputs would be excluded from binary denominators and reported separately.
+Keywords: FNR = misses → FPR = workload → OOD separate → proxy denominator 2,500 → commercial denominator 500
+
+BACKUP B9 — Limitations define the next validation steps
+Use when: The commission asks: “What would you do next?” or “How generalizable are these results?”
+Answer:
+Generalizability must be tested rather than assumed from one frozen protocol. The next validation steps are to use larger and more heterogeneous datasets with multiple reviewers, perform parameter sweeps and adaptive attacks, repeat the evaluation across new commercial-tool versions to measure drift, extend the protocol beyond still images, and strengthen audit and human-review controls.
+The objective is not simply to maximize accuracy. It is to test whether the observed operating profiles remain stable across data, tools, conditions, and time while preserving the traceability of every experimental decision.
+Keywords: larger multi-reviewer data → parameter sweeps/adaptive attacks → version drift → other modalities → stronger governance → preserve traceability
