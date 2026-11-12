@@ -1,0 +1,56 @@
+{
+  "slides": {
+    "1": {
+      "title": "Evaluating the Robustness",
+      "notes": "Good morning.\n\nI'm Lello Molinario, and my thesis evaluates the operational robustness of AI-based forensic tools under adversarial and anti-forensic image manipulation."
+    },
+    "2": {
+      "title": "How Do Manipulated Images Affect",
+      "notes": "AI can help forensic examiners decide which images to review first.\n\nBut what happens when an image is manipulated?\n\nThe relevant content may still be present, but the AI tool may fail to identify it.\n\nThis means that important images could be overlooked, while irrelevant images could receive unnecessary attention.\n\nMy research investigates how these errors occur and how they affect automated forensic triage."
+    },
+    "3": {
+      "title": "Research problem and questions",
+      "notes": "Accuracy on clean images is not enough.\n\nMy research focuses on four questions.\n\nFirst, how do AI systems behave with manipulated or out-of-distribution images?\n\nSecond, can adversarial attacks transfer between different models?\n\nThird, how do commercial tools respond to attacks and different settings?\n\nFinally, what are the forensic implications of false positives and false negatives?"
+    },
+    "4": {
+      "title": "From Prior Work to the Research Gap",
+      "notes": "Previous research has explored AI-assisted digital forensics, adversarial attacks, and anti-forensic manipulation.\n\nIn particular, Sanna and colleagues examined how forensic AI tools respond to manipulated images.\n\nMy thesis builds on these studies by introducing a traceable protocol to evaluate different systems, attacks, and classification errors within a common framework."
+    },
+    "5": {
+      "title": "FAIRLab: A Traceable Evaluation Protocol",
+      "notes": "To study this problem, I designed and implemented FAIRLab.\n\nIt connects each original image to its modified versions, the settings used, and the results produced by each system.\n\nEach source has a stable identifier and a recorded hash, so the evaluation can be traced back to the original file.\n\nFAIRLab supports both white-box and black-box testing.\n\nIts main contribution is a consistent and auditable evaluation process."
+    },
+    "6": {
+      "title": "Dataset and Experimental Design",
+      "notes": "I started with almost twenty thousand candidate files from five collections.\n\nAfter validation and duplicate removal, 15,321 unique images remained.\n\nFrom these, one reviewer selected 1,500 images: 500 with weapons, 500 without weapons, and 500 outside the binary task.\n\nThe 1,000 weapon and non-weapon images formed the binary test set.\n\nI evaluated them clean and under ten manipulation conditions: five adversarial or adversarial-style, and five anti-forensic.\n\nIn total, the evaluation bundle contained 11,500 files, including 500 clean out-of-distribution images.\n\nThe modified images remain linked to their original sources."
+    },
+    "7": {
+      "title": "Evaluated Systems and Threat Model",
+      "notes": "For model-dependent attacks, I used EfficientNet-B0 as the white-box source model.\n\nThis means I could access its scores and gradients to generate the attacks.\n\nI then tested whether the same images affected ResNet18 and a CLIP-based classifier.\n\nFinally, I evaluated four families of commercial tools across six configurations, using only their observable outputs.\n\nThese experimental models are not replicas of the commercial systems.\n\nThe objective is to compare their responses under a defined threat model, not to declare an overall winner."
+    },
+    "8": {
+      "title": "Attack Conditions and Evaluation Metrics",
+      "notes": "I tested ten manipulation conditions.\n\nFour attacks targeted EfficientNet-B0: FGSM, Sigma Zero, One Pixel, and SuperDeepFool.\n\nColor Shift was a model-agnostic condition.\n\nThe five anti-forensic transformations included JPEG recompression, resizing, blur, histogram modification, and contrast stretching.\n\nFor each condition, I compared the system output with its clean baseline.\n\nI measured accuracy, missed weapon images, and false alerts.\n\nOut-of-distribution results were evaluated separately, because they do not have binary ground-truth labels."
+    },
+    "9": {
+      "title": "White-Box Results: Source Failure and Limited Transfer",
+      "notes": "The strongest result appears in the white-box source model.\n\nEfficientNet-B0 achieved 97.8 percent accuracy on clean images, but only 1.5 percent under Sigma Zero.\n\nHowever, the same attack did not cause a similar collapse in the receiving models.\n\nResNet18 remained at 96.8 percent, and CLIP at 94.4 percent.\n\nThis shows limited attack transfer in our tested setting.\n\nIt does not mean that these receiving models are generally resistant to adversarial attacks."
+    },
+    "10": {
+      "title": "Commercial Black-Box Results: Selected Effects",
+      "notes": "Commercial tools showed different error patterns.\n\nUnder Sigma Zero, Excire D80 accuracy dropped from 91.5 to 65.7 percent. False alerts increased from 78 to 331.\n\nUnder FGSM, Magnet.AI missed 96 weapon images, compared with 35 on clean inputs.\n\nAn anti-forensic histogram modification also reduced Excire D80 accuracy by 3.7 percentage points.\n\nThese changes matter because missed relevant images and extra alerts have different implications for forensic triage.\n\nImportantly, the attacks were generated against the source model, not directly against these commercial tools.\n\nThese are selected experimental effects, not a product ranking."
+    },
+    "12": {
+      "title": "Out-of-Distribution Behavior",
+      "notes": "I also tested 500 images outside the weapon versus non-weapon task.\n\nFor example, CLIP assigned the weapon label to 83.6 percent of its out-of-distribution evaluations.\n\nAmong the commercial configurations shown here, the corresponding rates ranged from 26 to 36 percent.\n\nThese numbers describe how often a weapon label was produced.\n\nThey are not accuracy values, and they should not automatically be interpreted as false positives.\n\nThis is important because unexpected inputs may still receive a forensic classification label."
+    },
+    "14": {
+      "title": "Conclusions and Future Work",
+      "notes": "The main conclusion is that high accuracy on clean images does not guarantee operational robustness.\n\nThe source model was highly vulnerable to some attacks, but the failures did not consistently transfer to other models.\n\nCommercial outputs also depended on the attack and the configuration, while out-of-distribution inputs produced separate concerns.\n\nFAIRLab provides a traceable way to study these effects, not a certification of commercial products.\n\nFuture work should include larger datasets, direct attacks against each model, and real analyst-centered evaluations.\n\nAI should support forensic judgment, not replace it."
+    },
+    "15": {
+      "title": "Thank you for listening",
+      "notes": "Thank you for listening.\n\nI'm happy to take your questions."
+    }
+  }
+}
