@@ -21,10 +21,8 @@ def main():
     deck = Presentation(PPTX)
     if len(deck.slides) != 24:
         raise RuntimeError("Expected 24 slides; aborting")
-    for i, slide in enumerate(deck.slides, 1):
-        print(f"CURRENT SLIDE {i:02d}: {' '.join(text(slide))[:110]!r}; show={slide._element.get('show')!r}", flush=True)
     visible = [(text(s), s._element.get("show")) for s in deck.slides]
-    protected = {n: note(deck.slides[n-1]) for n in [11, 13, *range(16, 25)]}
+    protected = {n: note(deck.slides[n-1]) for n in range(1, 25) if str(n) not in entries}
     for number, item in entries.items():
         n = int(number)
         slide = deck.slides[n-1]

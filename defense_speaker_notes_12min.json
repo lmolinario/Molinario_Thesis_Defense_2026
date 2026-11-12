@@ -40,15 +40,15 @@
       "title": "Commercial Black-Box Results: Selected Effects",
       "notes": "Commercial tools showed different error patterns.\n\nUnder Sigma Zero, Excire D80 accuracy dropped from 91.5 to 65.7 percent. False alerts increased from 78 to 331.\n\nUnder FGSM, Magnet.AI missed 96 weapon images, compared with 35 on clean inputs.\n\nAn anti-forensic histogram modification also reduced Excire D80 accuracy by 3.7 percentage points.\n\nThese changes matter because missed relevant images and extra alerts have different implications for forensic triage.\n\nImportantly, the attacks were generated against the source model, not directly against these commercial tools.\n\nThese are selected experimental effects, not a product ranking."
     },
-    "12": {
+    "11": {
       "title": "Out-of-Distribution Behavior",
       "notes": "I also tested 500 images outside the weapon versus non-weapon task.\n\nFor example, CLIP assigned the weapon label to 83.6 percent of its out-of-distribution evaluations.\n\nAmong the commercial configurations shown here, the corresponding rates ranged from 26 to 36 percent.\n\nThese numbers describe how often a weapon label was produced.\n\nThey are not accuracy values, and they should not automatically be interpreted as false positives.\n\nThis is important because unexpected inputs may still receive a forensic classification label."
     },
-    "14": {
+    "12": {
       "title": "Conclusions and Future Work",
       "notes": "The main conclusion is that high accuracy on clean images does not guarantee operational robustness.\n\nThe source model was highly vulnerable to some attacks, but the failures did not consistently transfer to other models.\n\nCommercial outputs also depended on the attack and the configuration, while out-of-distribution inputs produced separate concerns.\n\nFAIRLab provides a traceable way to study these effects, not a certification of commercial products.\n\nFuture work should include larger datasets, direct attacks against each model, and real analyst-centered evaluations.\n\nAI should support forensic judgment, not replace it."
     },
-    "15": {
+    "13": {
       "title": "Thank you for listening",
       "notes": "Thank you for listening.\n\nI'm happy to take your questions."
     }
